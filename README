@@ -1,4 +1,4 @@
-__Train Booking Service__
+Train Booking Service
 
   In this train ticket service is implemented on top of servlet which is very simple to create dynamic web pages. 
   Here we used HashMap data structure to store the data. So once server restarted, data will not be available.
