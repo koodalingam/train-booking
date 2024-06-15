@@ -2,9 +2,9 @@ package model;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import DTO.Ticket;
-import DTO.Train;
-import DTO.User;
+import dto.Ticket;
+import dto.Train;
+import dto.User;
 
 public class Database {
 

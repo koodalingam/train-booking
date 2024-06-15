@@ -1,5 +1,6 @@
-package DTO;
+package dto;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import model.Database;
@@ -92,7 +93,7 @@ public class Ticket {
 		this.price = price;
 	}
 	
-	public JSONObject getJSON() {
+	public JSONObject getJSON() throws JSONException, Exception {
 		JSONObject json = new JSONObject();
 		json.put("ticket_id", String.valueOf( this.ticketId)) ;
 		json.put("user_id",  String.valueOf( this.userId));

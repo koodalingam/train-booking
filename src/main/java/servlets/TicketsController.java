@@ -13,7 +13,7 @@ import java.io.IOException;
 
 import org.json.JSONObject;
 
-import DTO.Ticket;
+import dto.Ticket;
 import exception.CheckedException;
 
 /**

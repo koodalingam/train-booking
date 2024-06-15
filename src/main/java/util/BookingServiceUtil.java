@@ -9,9 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONObject;
 
-import DTO.Ticket;
-import DTO.Train;
-import DTO.User;
+import dto.Ticket;
+import dto.Train;
+import dto.User;
 import exception.CheckedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
