@@ -9,6 +9,8 @@ Prerequisites:
   1. Eclipse should be installed. Download it from here ( https://www.eclipse.org/downloads/packages/installer )  
   2. Apache Tomcat server should be installed ( https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.89/bin/apache-tomcat-9.0.89.tar.gz )
   3. Clone this project in your machine
+  4. Change normal folder into web app project( https://mkyong.com/java/how-to-convert-java-project-to-web-project-in-eclipse )
+  5. Get json jar and it build path (https://mvnrepository.com/artifact/org.json/json/20140107)
 
 
 APIs:
@@ -17,4 +19,3 @@ APIs:
 3. View the users and seat allocation
 4. Remove the user from the train
 5. Modify user's seat
-
