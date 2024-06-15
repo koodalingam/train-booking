@@ -15,7 +15,164 @@ Prerequisites:
 
 APIs:
 1. Booking Ticket
+	API: /api/v1/tickets
+	Method: POST
+	Params:
+		email - kooda@test.com
+		first_name - kooda 
+		last_name  - lingam
+	Success Response:
+		{
+    "data": {
+        "amount_paid": "5.0",
+        "user_id": "1000000000",
+        "user_name": "kooda lingam",
+        "seat_no": "1",
+        "from": "London",
+        "section": "A",
+        "to": "France",
+        "ticket_id": "1000000001",
+        "booked_time": "1718483483168"
+    },
+    "success": true
+	}
+	
+	Error Response:
+	i) 
+		{
+    "success": false,
+    "error": {
+        "code": 1001,
+        "message": "The given email user was already booked the ticket"
+    }
+	}
+	ii)
+		{
+    "success": false,
+    "error": {
+        "code": 1002,
+        "message": "No seats available to book"
+    }
+	}
+	
+	iii)
+		
+		
+	
 2. Display ticket or receipt for the user
+	API: /api/v1/tickets
+	Method: GET
+	Params:
+		action - viewreceipt
+		user_id - 1000000005 
+	Success Response:
+	{
+    "data": {
+        "amount_paid": "5.0",
+        "user_id": "1000000004",
+        "user_name": "kooda lingam2",
+        "seat_no": "3",
+        "from": "London",
+        "section": "A",
+        "to": "France",
+        "ticket_id": "1000000005",
+        "booked_time": "1718483808895"
+    },
+    "success": true
+	}	
+	
+	
 3. View the users and seat allocation
+	API: /api/v1/tickets
+	Method: GET
+	Params:
+		action - viewsection
+		section - A 
+	Success Response:
+	{
+    "data": [
+        {
+            "user_id": "1000000000",
+            "user_name": "kooda lingam1",
+            "seat_no": "1"
+        },
+        {
+            "user_id": "1000000002",
+            "user_name": "kooda lingam2",
+            "seat_no": "2"
+        }
+    ],
+    "success": true
+	}
+	
+	
 4. Remove the user from the train
+	API: /api/v1/users
+	Method: DELETE
+	Params:
+		user_id - 1000000005 
+	Success Response:
+	{
+    "success": true
+	}	
+	
 5. Modify user's seat
+	API: /api/v1/tickets
+	Method: PUT
+	Params:
+		action - modify
+		user_id - 1000000005 
+		seat_no - 3
+	Success Response:
+	{
+    "data": {
+        "amount_paid": "5.0",
+        "user_id": "1000000004",
+        "user_name": "kooda lingam2",
+        "seat_no": "3",
+        "from": "London",
+        "section": "A",
+        "to": "France",
+        "ticket_id": "1000000005",
+        "booked_time": "1718483808895"
+    },
+    "success": true
+	}
+
+	Error response:
+		{
+    "success": false,
+    "error": {
+        "code": 1000,
+        "message": "Unable to modify the ticket for the user. Already someone occuppied this seat"
+    }
+	}
+
+
+Common Error Responses:
+i)
+	{
+    "success": false,
+    "error": {
+        "code": 1004,
+        "message": "No user found for this user Id"
+    }
+	}
+
+ii)
+	{
+    "success": false,
+    "error": {
+        "code": 1003,
+        "message": "No ticket found for this user"
+    }
+	}
+	
+iii)
+	{
+    "success": false,
+    "error": {
+        "code": 500,
+        "message": "Technical issues at the moment"
+    }
+	}

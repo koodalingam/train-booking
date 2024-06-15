@@ -26,17 +26,18 @@ public class UsersController extends HttpServlet {
 		JSONObject json = new JSONObject();
 		try {
 			String userId = request.getParameter("user_id");
+			BookingServiceUtil.validateUser(Long.valueOf(userId));
+
 			BookingServiceUtil.removeUserFromTrain(Long.valueOf(userId));
 			json.put("success", true);
 		}catch(Exception e) {
-			System.out.println("Error "+e.getMessage());
-			e.printStackTrace();
 			json.put("success", false);
-
 			if(e instanceof CheckedException) {
 				CheckedException exp = (CheckedException) e;
 				json.put("error", exp.getErrorCode().getJSON());
 			}else {
+				System.out.println("Error "+e.getMessage());
+				e.printStackTrace();
 				json.put("error", ErrorCode.SERVER_ERROR.getJSON());
 			}
 		}

@@ -108,7 +108,7 @@ public class Database {
 	}
 
 	public static ConcurrentHashMap<Integer,Long> getSeatMap(int section)  {
-		return sectionVsSeatMap.get(section);
+		return sectionVsSeatMap.get(section) != null?sectionVsSeatMap.get(section): new ConcurrentHashMap<Integer,Long>();
 	}
 
 	public static void setSeatMap(int section, ConcurrentHashMap<Integer,Long> map) throws Exception {

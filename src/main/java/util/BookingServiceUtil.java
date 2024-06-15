@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import dto.Ticket;
@@ -59,37 +60,41 @@ public class BookingServiceUtil {
 
 
 	public static Ticket createTicket(HttpServletRequest request) throws Exception{
+		try {
+			String email = request.getParameter("email");
+			String firstName = request.getParameter("first_name");
+			String lastName = request.getParameter("last_name");
 
-		String email = request.getParameter("email");
-		String firstName = request.getParameter("first_name");
-		String lastName = request.getParameter("last_name");
+			Long userId = Database.getUserIdByEmail(email);
 
-		Long userId = Database.getUserIdByEmail(email);
-
-		if(userId != null) {
-			Ticket ticket = Database.getTicketbyUserId(Long.valueOf(userId));
-			if(ticket!=null) {
-				throw new CheckedException(ErrorCode.ALREADY_BOOKED);
+			if(userId != null) {
+				Ticket ticket = Database.getTicketbyUserId(Long.valueOf(userId));
+				if(ticket!=null) {
+					throw new CheckedException(ErrorCode.ALREADY_BOOKED);
+				}
+			}else {
+				userId = IdGenerator.getNextId();
+				User user   = new User(userId, firstName, lastName, email);
+				Database.addUser(user);
 			}
-		}else {
-			userId = IdGenerator.getNextId();
-			User user   = new User(userId, firstName, lastName, email);
-			Database.addUser(user);
+
+			long ticketId = IdGenerator.getNextId();
+			HashMap<String, Integer> seatMap =  getSectionAndSeatNo(ticketId);
+
+			if(seatMap.isEmpty()) {
+				throw new CheckedException(ErrorCode.NO_AVAILABLE_SEATS);
+			}
+
+			Ticket ticket = new Ticket(ticketId, userId, System.currentTimeMillis());
+			ticket.setSeatNo(seatMap.get("seat_no"));
+			ticket.setSection(seatMap.get("section"));
+
+			Database.addTicket(ticket);
+			return ticket;
+		}catch(Exception e) {
+			System.out.println("Error while ticket booking email");
+			throw e;
 		}
-
-		long ticketId = IdGenerator.getNextId();
-		HashMap<String, Integer> seatMap =  getSectionAndSeatNo(ticketId);
-
-		if(seatMap.isEmpty()) {
-			throw new CheckedException(ErrorCode.NO_AVAILABLE_SEATS);
-		}
-
-		Ticket ticket = new Ticket(ticketId, userId, System.currentTimeMillis());
-		ticket.setSeatNo(seatMap.get("seat_no"));
-		ticket.setSection(seatMap.get("section"));
-
-		Database.addTicket(ticket);
-		return ticket;
 	}
 
 
@@ -103,7 +108,7 @@ public class BookingServiceUtil {
 		HashMap<String, Integer> map = new HashMap<String, Integer>();
 		try {
 			Train trainObj = Database.getTrain(Constants.DEFAULT_TRAIN_ID);
-			for(int section=1;section<trainObj.getNoOfSections();section++) {
+			for(int section=1;section<=trainObj.getNoOfSections();section++) {
 				int seatNo = getSeatNo(trainObj, section, ticketId);
 				if(seatNo>0) {
 					map.put("seat_no", seatNo);
@@ -134,7 +139,7 @@ public class BookingServiceUtil {
 		}else {
 			ArrayList<Integer> seatList = new ArrayList<Integer>(seatMap.keySet());
 			Collections.sort( seatList);
-			int lastSeat = seatList.get(seatList.size());
+			int lastSeat = seatList.get(seatList.size()-1);
 			if(lastSeat<trainObj.getNoOfSeatsPerSection()) {
 				seat = lastSeat+1;
 			}else {
@@ -167,15 +172,14 @@ public class BookingServiceUtil {
 				seatMap.put(seatNo, ticket.getTicketId());
 				seatMap.remove(ticket.getSeatNo());
 				ticket.setSeatNo(seatNo);
-				Database.addTicket(ticket);
 				Database.setSeatMap(ticket.getSection(), seatMap);
+				Database.addTicket(ticket);
 				return ticket;
 			}else {
 				throw new CheckedException(ErrorCode.UNABLE_MODIFY_TICKET);
 			}
 		}catch(Exception e) {
 			System.out.println("Error while modify seat for the user "+ticket.getUserId() );
-			e.printStackTrace();
 			throw e;
 		}
 	}
@@ -193,7 +197,6 @@ public class BookingServiceUtil {
 			Database.setSeatMap(ticket.getSection(), seatMap);
 		}catch(Exception e) {
 			System.out.println("Error while remove Seat Allocation for the userId "+ticket.getUserId() + " ticketId: "+ticket.getTicketId() );
-			e.printStackTrace();
 			throw e;
 		}
 	}
@@ -214,31 +217,40 @@ public class BookingServiceUtil {
 			Database.deleteTicket(ticket);
 		}catch(Exception e) {
 			System.out.println("Error while deleting the user "+userId );
-			e.printStackTrace();
 			throw e;
 		}
 	}
 
-	public static JSONObject viewSeatDetailsOfSection(int section) {
-		JSONObject json = new JSONObject();
+	public static JSONArray viewSeatDetailsOfSection(int section) throws Exception{
+		JSONArray array = new JSONArray();
 		try {
 			ConcurrentHashMap<Integer,Long> seatMap = Database.getSeatMap(section);
-
 			ArrayList<Integer> seatList = new ArrayList<Integer>(seatMap.keySet());
 			Collections.sort( seatList);
 			for(Integer seatNo: seatList) {
 				long ticketId = seatMap.get(seatNo);
 				Ticket ticket = Database.getTicket(ticketId);
 				User user = Database.getUser(ticket.getUserId());
-				json.put(String.valueOf(seatNo), user.getDisplayName());
+				JSONObject temp = new JSONObject();
+				temp.put("seat_no", String.valueOf(seatNo));
+				temp.put("user_name", user.getDisplayName());
+				temp.put("user_id", String.valueOf(user.getUserId()));
+
+				array.put(temp);
 			}
 
 		}catch(Exception e) {
 			System.out.println("Error while viewing seating details of the section"+section );
-			e.printStackTrace();
 			throw e;
 		}
-		return json;
+		return array;
+	}
+
+	public static void validateUser(long userId) throws Exception{
+		User user = Database.getUser(userId);
+		if(user == null) {
+			throw new CheckedException(ErrorCode.NO_USER_FOUND);
+		}
 	}
 
 }

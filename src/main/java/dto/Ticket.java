@@ -103,8 +103,8 @@ public class Ticket {
 		json.put("to", this.toLocation);
 		json.put("amount_paid",  String.valueOf( this. price));
 		json.put("section", BookingServiceUtil.getSectionDisplayName(this.section));
-		json.put("seat_no", this.seatNo);
-		json.put("booked_time", this.time);
+		json.put("seat_no",  String.valueOf(this.seatNo));
+		json.put("booked_time",  String.valueOf(this.time));
 		
 		return json;
 	}

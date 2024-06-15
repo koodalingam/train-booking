@@ -11,6 +11,7 @@ import util.Constants.ErrorCode;
 
 import java.io.IOException;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import dto.Ticket;
@@ -37,8 +38,9 @@ public class TicketsController extends HttpServlet {
 		try {
 			String action = request.getParameter("action");
 
-			if("bookingreceipt".equals(action)) {
+			if("viewreceipt".equals(action)) {
 				String userId = request.getParameter("user_id");
+				BookingServiceUtil.validateUser(Long.valueOf(userId));
 				Ticket ticket = Database.getTicketbyUserId(Long.valueOf(userId));
 				if(ticket == null) {
 					throw new CheckedException(ErrorCode.NO_TICKET_FOUND);
@@ -48,7 +50,7 @@ public class TicketsController extends HttpServlet {
 
 			}else if("viewsection".equals(action)) {
 				String section = request.getParameter("section");
-				JSONObject data = BookingServiceUtil.viewSeatDetailsOfSection(BookingServiceUtil.getSection(section));
+				JSONArray data = BookingServiceUtil.viewSeatDetailsOfSection(BookingServiceUtil.getSection(section));
 				json.put("data", data);
 				json.put("success", true);
 			}else {
@@ -56,13 +58,13 @@ public class TicketsController extends HttpServlet {
 			}
 
 		}catch(Exception e) {
-			System.out.println("Error "+e.getMessage());
-			e.printStackTrace();
 			json.put("success", false);
 			if(e instanceof CheckedException) {
 				CheckedException exp = (CheckedException) e;
 				json.put("error", exp.getErrorCode().getJSON());
 			}else {
+				System.out.println("Error "+e.getMessage());
+				e.printStackTrace();
 				json.put("error", ErrorCode.SERVER_ERROR.getJSON());
 			}
 		}
@@ -79,14 +81,13 @@ public class TicketsController extends HttpServlet {
 			json.put("data", ticket.getJSON());
 			json.put("success", true);
 		}catch(Exception e) {
-			System.out.println("Error "+e.getMessage());
-			e.printStackTrace();
 			json.put("success", false);
-
 			if(e instanceof CheckedException) {
 				CheckedException exp = (CheckedException) e;
 				json.put("error", exp.getErrorCode().getJSON());
 			}else {
+				System.out.println("Error "+e.getMessage());
+				e.printStackTrace();
 				json.put("error", ErrorCode.SERVER_ERROR.getJSON());
 			}
 		}
@@ -103,6 +104,8 @@ public class TicketsController extends HttpServlet {
 			String action = request.getParameter("action");
 			if("modify".equals(action)) {
 				String userId = request.getParameter("user_id");
+				BookingServiceUtil.validateUser(Long.valueOf(userId));
+
 				String seatNo = request.getParameter("seat_no");
 				Ticket ticket = Database.getTicketbyUserId(Long.valueOf(userId));
 				if(ticket == null) {
@@ -116,14 +119,13 @@ public class TicketsController extends HttpServlet {
 			}
 
 		}catch(Exception e) {
-			System.out.println("Error "+e.getMessage());
-			e.printStackTrace();
 			json.put("success", false);
-
 			if(e instanceof CheckedException) {
 				CheckedException exp = (CheckedException) e;
 				json.put("error", exp.getErrorCode().getJSON());
 			}else {
+				System.out.println("Error "+e.getMessage());
+				e.printStackTrace();
 				json.put("error", ErrorCode.SERVER_ERROR.getJSON());
 			}
 		}
