@@ -12,7 +12,7 @@ Prerequisites:
   4. Change normal project into dynamic web app project( https://mkyong.com/java/how-to-convert-java-project-to-web-project-in-eclipse )
   5. Get json jar and it must added in build path (https://mvnrepository.com/artifact/org.json/json/20140107)
   6. Download H2 database jar and add build path (https://search.maven.org/remotecontent?filepath=com/h2database/h2/2.2.224/h2-2.2.224.jar)
-  7. If jars not effect not class not found exception occur, kindly add these jars under tomcat lib folder
+  7. If jars not effect not class or found exception occur, kindly add these jars under tomcat lib folder
 
 
 APIs:
@@ -57,7 +57,6 @@ APIs:
     }
 	}
 	
-	iii)
 		
 		
 	
