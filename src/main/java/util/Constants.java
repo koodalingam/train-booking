@@ -6,7 +6,7 @@ public class Constants {
 	
 	public static long DEFAULT_TRAIN_ID = 1L;
 	public static int DEFAULT_TRAIN_SECTION = 2;
-	public static int DEFAULT_TRAIN_SECTION_SEAT_COUNT = 10;
+	public static int DEFAULT_TRAIN_SECTION_SEAT_COUNT = 3;
 
 	public enum ErrorCode{
 		SERVER_ERROR(500, "Technical issues at the moment"), 

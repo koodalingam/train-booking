@@ -15,7 +15,7 @@ public class Ticket {
 	private String fromLocation = "London";
 	private String toLocation = "France";
 	private int section;
-	private int seatNo;
+	private int seatNo = 0;
 	private float price = 5.0f;
 
 	public Ticket(long ticketId, long userId, long time  ) {

@@ -2,6 +2,7 @@ package servlets;
 
 import java.io.IOException;
 
+import org.h2.util.StringUtils;
 import org.json.JSONObject;
 
 import exception.CheckedException;
@@ -26,6 +27,9 @@ public class UsersController extends HttpServlet {
 		JSONObject json = new JSONObject();
 		try {
 			String userId = request.getParameter("user_id");
+			if( !StringUtils.isNumber(userId)) {
+				throw new CheckedException(ErrorCode.NO_USER_FOUND);
+			}
 			BookingServiceUtil.validateUser(Long.valueOf(userId));
 
 			BookingServiceUtil.removeUserFromTrain(Long.valueOf(userId));

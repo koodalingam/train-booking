@@ -1,43 +1,49 @@
 package model;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 import dto.Ticket;
 import dto.Train;
 import dto.User;
 
+/**
+ * We are going with H2 Database and hash database also done in HashDatabase.java
+ * After any time we can move to any database with just replace those methods
+ */
 public class Database {
 
-	private static ConcurrentHashMap<Long, Ticket> ticketIdVsTicketMap = new ConcurrentHashMap<Long, Ticket>();
+	private static String inmemoryType= "h2";
+	
+	public static String getDatabaseType() {
+		return inmemoryType;
+	}
 
-	private static ConcurrentHashMap<Long, User> userIdVsUserMap = new ConcurrentHashMap<Long, User>();
-
-	private static ConcurrentHashMap<Long, Long> userIdVsTicketIdMap = new ConcurrentHashMap<Long, Long>();
-
-	private static ConcurrentHashMap<String, Long > emailVsUserId = new ConcurrentHashMap<String, Long>();
-
-	private static ConcurrentHashMap<Long, Train> trainIdVstrainMap = new ConcurrentHashMap<Long, Train>();
-	private static ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,Long> > sectionVsSeatMap = new ConcurrentHashMap<Integer, ConcurrentHashMap<Integer,Long>>();
-
+	private static AbstractDatabase getDatabase() {
+		if("h2".equals(inmemoryType)) {
+			return new H2Database();
+		}else {
+			return new HashDatabase();
+		}
+	}
+	
 	/**
 	 * It will put the User Object for user Id
 	 * @param user
 	 */
 	public static void addUser(User user)  throws Exception {
-		emailVsUserId.put(user.getEmail(), user.getUserId());
-		userIdVsUserMap.put(user.getUserId(), user);
+		getDatabase().addUser(user);
 	}
 
-	public static Long getUserIdByEmail(String email) {
-		return emailVsUserId.get(email);
+	public static Long getUserIdByEmail(String email)  throws Exception {
+		return getDatabase().getUserIdByEmail(email);
 	}
 
 	/**
 	 * It will return the User Object  by user Id
 	 * @param userId
 	 */
-	public static User getUser(long userId) {
-		return userIdVsUserMap.get(userId);
+	public static User getUser(long userId)  throws Exception {
+		return getDatabase().getUser(userId);
 	}
 
 
@@ -47,8 +53,7 @@ public class Database {
 	 * @throws Exception
 	 */
 	public static void deleteUser(User user)  throws Exception {
-		emailVsUserId.remove(user.getEmail());
-		userIdVsUserMap.remove(user.getUserId());
+		getDatabase().deleteUser(user);
 	}
 
 	/**
@@ -56,8 +61,7 @@ public class Database {
 	 * @param ticket
 	 */
 	public static void addTicket(Ticket ticket)  throws Exception {
-		ticketIdVsTicketMap.put(ticket.getTicketId(), ticket);
-		userIdVsTicketIdMap.put(ticket.getUserId(), ticket.getTicketId());
+		getDatabase().addTicket(ticket);
 	}
 
 	/**
@@ -65,12 +69,8 @@ public class Database {
 	 * @param userId
 	 * @return
 	 */
-	public static Ticket getTicketbyUserId(long userId) {
-		if(userIdVsTicketIdMap.containsKey(userId)) {
-			return getTicket(userIdVsTicketIdMap.get(userId));
-		}
-		return null;
-
+	public static Ticket getTicketbyUserId(long userId) throws Exception {
+		return getDatabase().getTicketbyUserId(userId);
 	}
 
 	/**
@@ -78,24 +78,24 @@ public class Database {
 	 * @param ticketId
 	 * @return
 	 */
-	public static Ticket getTicket(long ticketId) {
-		return ticketIdVsTicketMap.get(ticketId);
+	public static Ticket getTicket(long ticketId) throws Exception {
+		return getDatabase().getTicket(ticketId);
 	}
 
 	/**
 	 * Here we will delete user vs ticket mapping alone 
 	 * @param ticket
 	 */
-	public static void deleteTicket(Ticket ticket) {
-		userIdVsTicketIdMap.remove(ticket.getUserId());
+	public static void deleteTicket(Ticket ticket)  throws Exception {
+		getDatabase().deleteTicket(ticket);
 	}
 
 	/**
 	 * It will return the Train Object
 	 * @param train
 	 */
-	public static void addTrain(Train train)  {
-		trainIdVstrainMap.put(train.getTrainId(), train);
+	public static void addTrain(Train train)  throws Exception {
+		getDatabase().addTrain(train);
 	}
 
 	/**
@@ -103,16 +103,16 @@ public class Database {
 	 * @param trainId
 	 * @return
 	 */
-	public static Train getTrain(long trainId) {
-		return trainIdVstrainMap.get(trainId);
+	public static Train getTrain(long trainId) throws Exception {
+		return getDatabase().getTrain(trainId);
 	}
 
-	public static ConcurrentHashMap<Integer,Long> getSeatMap(int section)  {
-		return sectionVsSeatMap.get(section) != null?sectionVsSeatMap.get(section): new ConcurrentHashMap<Integer,Long>();
+	public static Map<Integer,Long> getSeatMap(int section)   throws Exception  {
+		return getDatabase().getSeatMap(section);
 	}
-
-	public static void setSeatMap(int section, ConcurrentHashMap<Integer,Long> map) throws Exception {
-		sectionVsSeatMap.put(section, map);
+	
+	public static Ticket modifySeat(Ticket ticket,  int newSeatNo) throws Exception{
+		return getDatabase().modifySeat(ticket, newSeatNo);
 	}
 
 }

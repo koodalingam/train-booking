@@ -1,7 +1,9 @@
-Train Booking Service
+Train Ticket Booking Service
 
   This train ticket service is implemented on top of servlet requests which is very simple to create dynamic web pages. 
-  Here we used HashMap data structure to store the data. So once server restarted, data will not be available  as we follow in-memory database.
+  Here we used H2 Database as in memory database to store the data. So server restarted, data will not be available as we follow in-memory database. 
+  We can persist this data in disk too if we need. 
+  Also supported hash as in memory database. It is based on inmemoryType constand in Database.java
 
 Prerequisites:
   1. Eclipse should be installed. Download it from here ( https://www.eclipse.org/downloads/packages/installer )  
@@ -9,6 +11,8 @@ Prerequisites:
   3. Clone this project in your machine
   4. Change normal project into dynamic web app project( https://mkyong.com/java/how-to-convert-java-project-to-web-project-in-eclipse )
   5. Get json jar and it must added in build path (https://mvnrepository.com/artifact/org.json/json/20140107)
+  6. Download H2 database jar and add build path (https://search.maven.org/remotecontent?filepath=com/h2database/h2/2.2.224/h2-2.2.224.jar)
+  7. If jars not effect not class not found exception occur, kindly add these jars under tomcat lib folder
 
 
 APIs:
@@ -174,3 +178,12 @@ iii)
         "message": "Technical issues at the moment"
     }
 	}
+iv)
+{
+    "success": false,
+    "error": {
+        "code": 1005,
+        "message": "Invalid Section"
+    }
+}
+

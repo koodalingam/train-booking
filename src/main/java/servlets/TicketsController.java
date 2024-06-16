@@ -11,6 +11,7 @@ import util.Constants.ErrorCode;
 
 import java.io.IOException;
 
+import org.h2.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -40,6 +41,9 @@ public class TicketsController extends HttpServlet {
 
 			if("viewreceipt".equals(action)) {
 				String userId = request.getParameter("user_id");
+				if( !StringUtils.isNumber(userId)) {
+					throw new CheckedException(ErrorCode.NO_USER_FOUND);
+				}
 				BookingServiceUtil.validateUser(Long.valueOf(userId));
 				Ticket ticket = Database.getTicketbyUserId(Long.valueOf(userId));
 				if(ticket == null) {
@@ -56,7 +60,6 @@ public class TicketsController extends HttpServlet {
 			}else {
 				throw new CheckedException(ErrorCode.INVALID_REQUEST);
 			}
-
 		}catch(Exception e) {
 			json.put("success", false);
 			if(e instanceof CheckedException) {
@@ -104,6 +107,9 @@ public class TicketsController extends HttpServlet {
 			String action = request.getParameter("action");
 			if("modify".equals(action)) {
 				String userId = request.getParameter("user_id");
+				if( !StringUtils.isNumber(userId)) {
+					throw new CheckedException(ErrorCode.NO_USER_FOUND);
+				}
 				BookingServiceUtil.validateUser(Long.valueOf(userId));
 
 				String seatNo = request.getParameter("seat_no");

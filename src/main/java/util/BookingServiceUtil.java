@@ -4,8 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,14 +16,27 @@ import exception.CheckedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import model.Database;
+import model.H2Database;
 import model.IdGenerator;
 import util.Constants.ErrorCode;
 
 public class BookingServiceUtil {
 
 	static {
-		Train train = new Train(Constants.DEFAULT_TRAIN_ID, Constants.DEFAULT_TRAIN_SECTION, Constants.DEFAULT_TRAIN_SECTION_SEAT_COUNT);
-		Database.addTrain(train);
+		try {
+			if("h2".equals(Database.getDatabaseType())) {
+				H2Database.initialise();
+			}
+
+			Train train = Database.getTrain(Constants.DEFAULT_TRAIN_ID);
+			if(train==null) {
+				train = new Train(Constants.DEFAULT_TRAIN_ID, Constants.DEFAULT_TRAIN_SECTION, Constants.DEFAULT_TRAIN_SECTION_SEAT_COUNT);
+				Database.addTrain(train);
+			}
+		}catch(Exception e) {
+			System.out.println("Error while adding train");
+			e.printStackTrace();
+		}
 	}
 
 	public static String getSectionDisplayName(int sectionId) throws Exception{
@@ -47,7 +59,7 @@ public class BookingServiceUtil {
 		}
 	}
 
-	public static Train getTrain() {
+	public static Train getTrain() throws Exception{
 		return Database.getTrain(Constants.DEFAULT_TRAIN_ID);
 	}
 
@@ -79,15 +91,13 @@ public class BookingServiceUtil {
 			}
 
 			long ticketId = IdGenerator.getNextId();
-			HashMap<String, Integer> seatMap =  getSectionAndSeatNo(ticketId);
+			Ticket ticket = new Ticket(ticketId, userId, System.currentTimeMillis());
 
-			if(seatMap.isEmpty()) {
+			setSectionAndSeatNo(ticket);
+
+			if(ticket.getSeatNo() ==0) {
 				throw new CheckedException(ErrorCode.NO_AVAILABLE_SEATS);
 			}
-
-			Ticket ticket = new Ticket(ticketId, userId, System.currentTimeMillis());
-			ticket.setSeatNo(seatMap.get("seat_no"));
-			ticket.setSection(seatMap.get("section"));
 
 			Database.addTicket(ticket);
 			return ticket;
@@ -101,18 +111,16 @@ public class BookingServiceUtil {
 
 	/**
 	 * This will will return the next available section and seat no
-	 * @param ticketId
-	 * @return
+	 * @param ticket
 	 */
-	public static HashMap<String, Integer> getSectionAndSeatNo(long ticketId) throws Exception{
-		HashMap<String, Integer> map = new HashMap<String, Integer>();
+	public static void setSectionAndSeatNo(Ticket ticket) throws Exception{
 		try {
 			Train trainObj = Database.getTrain(Constants.DEFAULT_TRAIN_ID);
 			for(int section=1;section<=trainObj.getNoOfSections();section++) {
-				int seatNo = getSeatNo(trainObj, section, ticketId);
+				int seatNo = getSeatNo(trainObj, section, ticket);
 				if(seatNo>0) {
-					map.put("seat_no", seatNo);
-					map.put("section", section);
+					ticket.setSeatNo(seatNo);
+					ticket.setSection(section);
 					break;
 				}
 			}
@@ -120,7 +128,6 @@ public class BookingServiceUtil {
 			System.out.println("Error while getting seat for the train " );
 			e.printStackTrace();
 		}
-		return map;
 	}
 
 
@@ -128,12 +135,12 @@ public class BookingServiceUtil {
 	 * This will return the next available seat no from the given section
 	 * @param trainObj
 	 * @param section
-	 * @param ticketId
+	 * @param ticket
 	 * @return
 	 */
-	private static int getSeatNo(Train trainObj, int section, long ticketId) throws Exception{
+	private static int getSeatNo(Train trainObj, int section, Ticket ticket) throws Exception{
 		int seat = 0;
-		ConcurrentHashMap<Integer,Long> seatMap =  Database.getSeatMap(section);
+		Map<Integer,Long> seatMap =  Database.getSeatMap(section);
 		if(seatMap.isEmpty()) {
 			seat = 1;
 		}else {
@@ -153,8 +160,7 @@ public class BookingServiceUtil {
 		}
 
 		if(seat>0) {
-			seatMap.put(seat, ticketId);
-			Database.setSeatMap(section, seatMap);
+			ticket.setSeatNo(seat);
 		}
 		return seat;
 	}
@@ -162,41 +168,19 @@ public class BookingServiceUtil {
 	/**
 	 * 
 	 * @param ticket
-	 * @param seatNo
+	 * @param newSeatNo
 	 * @return
 	 */
-	public static Ticket modifySeat(Ticket ticket,  int seatNo) throws Exception{
+	public static Ticket modifySeat(Ticket ticket,  int newSeatNo) throws Exception{
 		try {
-			ConcurrentHashMap<Integer,Long> seatMap = Database.getSeatMap(ticket.getSection());
-			if(!seatMap.containsKey(seatNo)) {
-				seatMap.put(seatNo, ticket.getTicketId());
-				seatMap.remove(ticket.getSeatNo());
-				ticket.setSeatNo(seatNo);
-				Database.setSeatMap(ticket.getSection(), seatMap);
-				Database.addTicket(ticket);
-				return ticket;
+			Map<Integer,Long> seatMap = Database.getSeatMap(ticket.getSection());
+			if(!seatMap.containsKey(newSeatNo)) {
+				return Database.modifySeat(ticket, newSeatNo);
 			}else {
 				throw new CheckedException(ErrorCode.UNABLE_MODIFY_TICKET);
 			}
 		}catch(Exception e) {
 			System.out.println("Error while modify seat for the user "+ticket.getUserId() );
-			throw e;
-		}
-	}
-
-
-	/**
-	 * 
-	 * @param ticket
-	 * @return
-	 */
-	public static void removeSeatAllocation(Ticket ticket) throws Exception{
-		try {
-			ConcurrentHashMap<Integer,Long> seatMap = Database.getSeatMap(ticket.getSection());
-			seatMap.remove(ticket.getSeatNo());
-			Database.setSeatMap(ticket.getSection(), seatMap);
-		}catch(Exception e) {
-			System.out.println("Error while remove Seat Allocation for the userId "+ticket.getUserId() + " ticketId: "+ticket.getTicketId() );
 			throw e;
 		}
 	}
@@ -213,7 +197,6 @@ public class BookingServiceUtil {
 			if(ticket == null) {
 				throw new CheckedException(ErrorCode.NO_TICKET_FOUND);
 			}
-			removeSeatAllocation(ticket);
 			Database.deleteTicket(ticket);
 		}catch(Exception e) {
 			System.out.println("Error while deleting the user "+userId );
@@ -224,7 +207,7 @@ public class BookingServiceUtil {
 	public static JSONArray viewSeatDetailsOfSection(int section) throws Exception{
 		JSONArray array = new JSONArray();
 		try {
-			ConcurrentHashMap<Integer,Long> seatMap = Database.getSeatMap(section);
+			Map<Integer,Long> seatMap = Database.getSeatMap(section);
 			ArrayList<Integer> seatList = new ArrayList<Integer>(seatMap.keySet());
 			Collections.sort( seatList);
 			for(Integer seatNo: seatList) {
