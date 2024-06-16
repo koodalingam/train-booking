@@ -1,9 +1,7 @@
 Train Booking Service
 
-  In this train ticket service is implemented on top of servlet which is very simple to create dynamic web pages. 
-  Here we used HashMap data structure to store the data. So once server restarted, data will not be available.
-  Since we are diving into Java, we can convert Tickets, Users & Trains as Objects to use java properties.
-
+  This train ticket service is implemented on top of servlet requests which is very simple to create dynamic web pages. 
+  Here we used HashMap data structure to store the data. So once server restarted, data will not be available  as we follow in-memory database.
 
 Prerequisites:
   1. Eclipse should be installed. Download it from here ( https://www.eclipse.org/downloads/packages/installer )  
