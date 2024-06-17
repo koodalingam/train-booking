@@ -18,7 +18,7 @@ Steps:
 
 
 
-APIs:
+APIs: ( https://www.postman.com/supply-saganist-12852771/workspace/public/collection/31035220-06903b76-7d5a-4913-80a1-3d7a217da7e8 )
 1. Booking Ticket
 	API: /api/v1/tickets
 	Method: POST
